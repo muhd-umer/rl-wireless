@@ -1,12 +1,9 @@
 """
 Implementation of the environment for the RL algorithm.
 """
-
 import numpy as np
 from scipy.special import j0
-
 dtype = np.float32
-
 
 class Environment:
     """

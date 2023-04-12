@@ -255,9 +255,9 @@ class Environment:
     def step(self, P):
         p_matrix, rate_matrix, reward_rate, sum_rate = self.calculate_rate(P)
         self.count = self.count + 1
-        H2_next = self.g[:, :, self.count]
+        g_next = self.g[:, :, self.count]
         s_actor_next, s_critic_next = self.generate_next_state(
-            H2_next, p_matrix, rate_matrix
+            g_next, p_matrix, rate_matrix
         )
 
         return s_actor_next, s_critic_next, reward_rate, sum_rate
@@ -281,9 +281,9 @@ class Environment:
         for p in P:
             reward_rate.append(self.calculate_sumrate(p))
         self.count = self.count + 1
-        H2_next = self.g[:, :, self.count]
+        g_next = self.g[:, :, self.count]
 
-        return H2_next, reward_rate
+        return g_next, reward_rate
 
     def reset__(self):
         self.count = 0

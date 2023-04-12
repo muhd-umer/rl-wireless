@@ -9,7 +9,6 @@ class Environment:
     """
     Environment for the RL algorithm
     """
-
     def __init__(
         self, fd, Ts, L, C, n_x, n_y, min_dis, max_dis, max_M, max_P, P_n
     ) -> None:

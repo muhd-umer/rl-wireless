@@ -127,3 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Desktop ini files
+*.ini
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb

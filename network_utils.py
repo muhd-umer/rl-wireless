@@ -24,7 +24,7 @@ from scipy.special import erfinv
 from jax.scipy.linalg import toeplitz
 
 
-def randn2(self, *args, **kargs):
+def randn2(*args, **kargs):
     args_r = tuple(reversed(args))
     uniform = np.random.rand(*args_r)
 

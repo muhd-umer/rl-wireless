@@ -170,7 +170,8 @@ def zf_combining(H):
 
     return res
 
-def channel_stat_setup(
+
+def channel_setup(
     key,
     N: int,
     K: int,

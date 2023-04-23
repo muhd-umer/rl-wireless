@@ -2,9 +2,6 @@
 Helper functions for the environment
 """
 from functools import partial
-import jax
-from jax import jit
-import jax.numpy as jnp
 from typing import (
     Any,
     Callable,
@@ -16,11 +13,11 @@ from typing import (
     Tuple,
     Union,
 )
-from jaxtyping import Array, Float, ArrayLike
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.special import erfinv
-from scipy.linalg import sqrtm
-from jax.scipy.linalg import toeplitz
+from scipy.linalg import sqrtm, toeplitz
+from numba import jit, njit, prange
 
 
 def randn2(*args, **kargs):
@@ -44,7 +41,7 @@ def mldivide(A, B):
     return hermitian(np.linalg.solve(A, hermitian(B)))
 
 
-@partial(jit, static_argnames=["real_imag"])
+@jit
 def corr(
     x: float,
     theta: ArrayLike,
@@ -52,7 +49,7 @@ def corr(
     antenna_spacing: float,
     col: int,
     real_imag: int,
-) -> Array:
+) -> ArrayLike:
     """
     Correlation function
     Args:
@@ -66,16 +63,17 @@ def corr(
         res: correlation value
     """
 
+    @jit
     def corr_real(x, antenna_spacing, col):
-        return jnp.cos(2 * jnp.pi * antenna_spacing * col * jnp.sin(x))
+        return np.cos(2 * np.pi * antenna_spacing * col * np.sin(x))
 
+    @jit
     def corr_imag(x, antenna_spacing, col):
-        return jnp.sin(2 * jnp.pi * antenna_spacing * col * jnp.sin(x))
+        return np.sin(2 * np.pi * antenna_spacing * col * np.sin(x))
 
+    @jit
     def gaussian_pdf(x, mean, dev):
-        return jnp.exp(-((x - mean) ** 2) / (2 * dev**2)) / (
-            jnp.sqrt(2 * jnp.pi) * dev
-        )
+        return np.exp(-((x - mean) ** 2) / (2 * dev**2)) / (np.sqrt(2 * np.pi) * dev)
 
     if real_imag == 0:
         res = corr_real(x, antenna_spacing, col)
@@ -87,7 +85,6 @@ def corr(
     return res
 
 
-# @jit
 def dBm_to_W(x):
     """
     Convert dBm to W
@@ -96,13 +93,12 @@ def dBm_to_W(x):
     return P
 
 
-@partial(jit, static_argnames=["M", "dtype"])
 def r_scattering(
     M: int,
     theta: ArrayLike,
     asd_deg: float,
     antenna_spacing: float = 0.5,
-    dtype=jnp.complex64,
+    dtype=np.complex128,
 ):
     """
     Local scattering model of a single cell
@@ -118,24 +114,22 @@ def r_scattering(
     Output:
         R: correlation matrix
     """
-    asd = asd_deg * jnp.pi / 180
-    init_row = jnp.zeros(
+    asd = asd_deg * np.pi / 180
+    init_row = np.zeros(
         [
             M,
         ],
         dtype=dtype,
     )
 
-    distance = jnp.arange(M)
-    x1 = jnp.exp(1j * 2 * jnp.pi * antenna_spacing * jnp.sin(theta) * distance)
-    x2 = jnp.exp(
-        -(asd**2)
-        / 2
-        * (2 * jnp.pi * antenna_spacing * jnp.cos(theta) * distance) ** 2
+    distance = np.arange(M)
+    x1 = np.exp(1j * 2 * np.pi * antenna_spacing * np.sin(theta) * distance)
+    x2 = np.exp(
+        -(asd**2) / 2 * (2 * np.pi * antenna_spacing * np.cos(theta) * distance) ** 2
     )
     init_row = x1 * x2
 
-    return toeplitz(c=jnp.conj(init_row))
+    return toeplitz(c=np.conj(init_row))
 
 
 def complex_normalize(X, axis=-1):
@@ -151,7 +145,7 @@ def noise_dbm(BW=10e6, NF=7):
     """
     # Noise figure with 10MHz BW
     """
-    return -174 + 10 * jnp.log10(BW) + NF
+    return -174 + 10 * np.log10(BW) + NF
 
 
 def zf_combining(H):
@@ -237,7 +231,7 @@ def channel_setup(
     )
 
     # normalized spatial correlation matrices
-    R = np.zeros([M, M, K, N, N, len(asd_degs)], dtype=np.complex64)
+    R = np.zeros([M, M, K, N, N, len(asd_degs)], dtype=np.complex128)
 
     channel_gain = np.zeros([K, N, N])
 
@@ -382,7 +376,7 @@ def get_precoding(H):
     for j in range(no_cells):
         res.append(zf_combining(H[:, j, j]))
 
-    return jnp.stack(res, axis=1)
+    return np.stack(res, axis=1)
 
 
 def antenna_selection(H, ant_sel=False):
@@ -399,23 +393,23 @@ def antenna_selection(H, ant_sel=False):
     Ns, N, N, K, M = H.shape
 
     if ant_sel:
-        antenna_sel = jnp.zeros((K, N, Ns, N, M), dtype=jnp.bool_)
+        antenna_sel = np.zeros((K, N, Ns, N, M), dtype=np.bool_)
 
         # strongest K_0 antennas
         K_0 = int(M * 0.8)
         for r in range(Ns):
             for n in range(N):
-                channel_power_ant = (jnp.abs(H[r, n, n]) ** 2).sum(axis=-2)
-                top_k = jnp.argsort(channel_power_ant)[0:K_0]
-                antenna_sel = antenna_sel.at[:, :, r, n, top_k].set(True)
+                channel_power_ant = (np.abs(H[r, n, n]) ** 2).sum(axis=-2)
+                top_k = np.argsort(channel_power_ant)[0:K_0]
+                antenna_sel[:, :, r, n, top_k] = True
         # or randomly
         antenna_sel = antenna_sel * 1.0
-        H_n = jnp.transpose(
-            (jnp.transpose(H, (2, 0, 4, 1, 3)) * antenna_sel), (2, 3, 0, 1, 4)
+        H_n = np.transpose(
+            (np.transpose(H, (2, 0, 4, 1, 3)) * antenna_sel), (2, 3, 0, 1, 4)
         )
 
     else:
-        antenna_sel = jnp.ones((Ns, N, M), dtype=jnp.bool_)
+        antenna_sel = np.ones((Ns, N, M), dtype=np.bool_)
         H_n = H
 
     W = get_precoding(H_n)
@@ -469,6 +463,6 @@ def get_rate(channel, precoding, power):
     int_noise = power * intercell_intf + power * intracell_intf + 1
     sinr = power * sig / int_noise
 
-    rate = jnp.log2(1 + sinr).mean(axis=0)
+    rate = np.log2(1 + sinr).mean(axis=0)
 
     return rate

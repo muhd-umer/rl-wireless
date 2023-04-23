@@ -30,20 +30,18 @@ def randn2(*args, **kargs):
     return np.sqrt(2) * erfinv(2 * uniform - 1)
 
 
-@jit
-def hermitian(A: Array) -> Array:
+def hermitian(A):
     """
     Hermitian of a matrixs
     """
-    return jnp.swapaxes(jnp.conj(A), -1, -2)
+    return np.swapaxes(np.conj(A), -1, -2)
 
 
-@jit
-def mldivide(A: Array, B: Array) -> Array:
+def mldivide(A, B):
     """
     Divide function
     """
-    return hermitian(jnp.linalg.solve(A, hermitian(B)))
+    return hermitian(np.linalg.solve(A, hermitian(B)))
 
 
 @partial(jit, static_argnames=["real_imag"])
@@ -140,12 +138,11 @@ def r_scattering(
     return toeplitz(c=jnp.conj(init_row))
 
 
-@partial(jit, static_argnames=["axis"])
 def complex_normalize(X, axis=-1):
     """
     Normalize complex vector
     """
-    mags = jnp.linalg.norm(jnp.abs(X), axis=axis, keepdims=True)
+    mags = np.linalg.norm(np.abs(X), axis=axis, keepdims=True)
 
     return X / mags
 
@@ -157,14 +154,13 @@ def noise_dbm(BW=10e6, NF=7):
     return -174 + 10 * jnp.log10(BW) + NF
 
 
-@jit
 def zf_combining(H):
     """
     ZF precoded combination
     """
-    H1 = H
-    A = hermitian(H) @ H1 + 1e-12 * jnp.eye(H.shape[-1])
-    B = H
+    H1 = np.asarray(H)
+    A = hermitian(H) @ H1 + 1e-12 * np.eye(H1.shape[-1])
+    B = H1
     res = mldivide(A, B)
 
     return res
@@ -322,19 +318,19 @@ def get_channnel_realization(M, K, N, Ns):
 
 
 def get_local_scatter(
+    N: int,
     M: int,
     K: int,
-    N: int,
     Ns: int,
-):
+) -> Tuple[ArrayLike, ArrayLike]:
     """
     Generate local scattering channel matrix
 
     Args:
         key: random key
-        M: number of antennas at BS
-        K: number of UEs
-        N: number of BSs
+        N: number of antennas at BS
+        M: number of UEs
+        K: number of BSs
         Ns: number of channel realizations
 
     Returns:
@@ -358,22 +354,18 @@ def get_local_scatter(
     gain_db -= noise_dbm()
 
     R_gain = R[:, :, :, :, :, 0] * np.power(10, gain_db / 10.0)
-    R_gain = np.asarray(np.transpose(R_gain[:, :, :, :, :], (4, 3, 2, 1, 0)))
+    R_gain = np.ascontiguousarray(np.transpose(R_gain[:, :, :, :, :], (4, 3, 2, 1, 0)))
 
     H = get_channnel_realization(M, K, N, Ns)
-    # sqrtm is only implemented on CPU
     H_gain = np.zeros_like(H)
-
     for _idx in np.ndindex(*H.shape[0:3]):
         H_gain[_idx] = sqrtm(R_gain[_idx]) @ H[_idx]
 
-    res = np.asarray(np.transpose(H_gain, (4, 0, 1, 2, 3)))
-    res, H_gain = jnp.asarray(res), jnp.asarray(H_gain)
+    res = np.ascontiguousarray(np.transpose(H_gain, (4, 0, 1, 2, 3)))
 
     return res, H_gain
 
 
-@jit
 def get_precoding(H):
     """
     ZF precoding method
@@ -393,7 +385,6 @@ def get_precoding(H):
     return jnp.stack(res, axis=1)
 
 
-@partial(jit, static_argnames=["ant_sel"])
 def antenna_selection(H, ant_sel=False):
     """
     Antenna selection and power allocation by using ZF precoding
@@ -448,9 +439,9 @@ def get_rate(channel, precoding, power):
     W = complex_normalize(V, -1)
 
     interval, N, K, M = H.shape[0], H.shape[1], H.shape[3], H.shape[4]
-    intercell_intf = jnp.zeros((N, K))
-    intracell_intf = jnp.zeros((interval, N, K))
-    sig = jnp.zeros((interval, N, K))
+    intercell_intf = np.zeros((N, K))
+    intracell_intf = np.zeros((interval, N, K))
+    sig = np.zeros((interval, N, K))
 
     for n in range(interval):
         for l in range(N):
@@ -470,8 +461,10 @@ def get_rate(channel, precoding, power):
                     w_intercell = W[
                         n, idx_othercell
                     ]  # (L-1, K, M) other cell's precoding vector
-                    p_inter = np.abs(w_intercell @ (H_intercell.swapaxes(-1, -2))) ** 2
-                    intercell_intf[l, k] += p_inter.sum() / interval
+                    p_inter = np.abs(w_intercell @ H_intercell.swapaxes(-1, -2)) ** 2
+                    intercell_intf[l, k] = (
+                        intercell_intf[l, k] + p_inter.sum() / interval
+                    )
 
     int_noise = power * intercell_intf + power * intracell_intf + 1
     sinr = power * sig / int_noise

@@ -6,12 +6,10 @@ import gymnasium as gym
 from gymnasium import spaces
 from . import network_utils
 
-dtype = np.float32
-
 
 class MassiveMIMOEnv(gym.Env):
     def __init__(
-        self, N, M, K, Ns, min_P, max_P, num_P, num_episodes, dtype=dtype
+        self, N, M, K, Ns, min_P, max_P, num_P, num_episodes, dtype=np.float32
     ):
         """
         Initialize the environment
@@ -34,11 +32,11 @@ class MassiveMIMOEnv(gym.Env):
         self.observation_space = spaces.Box(
             low=np.array(
                 [self.min_P, -(np.finfo(np.float32).max), -(np.finfo(np.float32).max)],
-                dtype=np.float32,
+                dtype=self.dtype,
             ),
             high=np.array(
                 [self.max_P, np.finfo(np.float32).max, np.finfo(np.float32).max],
-                dtype=np.float32,
+                dtype=self.dtype,
             ),
             dtype=dtype,
         )
@@ -58,7 +56,7 @@ class MassiveMIMOEnv(gym.Env):
     def get_power(self):
         power_set = np.hstack(
             [
-                np.zeros((1), dtype=dtype),
+                np.zeros((1), dtype=self.dtype),
                 1e-3
                 * pow(10.0, np.linspace(self.min_P, self.max_P, self.num_P - 1) / 10.0),
             ]
@@ -85,7 +83,7 @@ class MassiveMIMOEnv(gym.Env):
         interval, N, K, M = H.shape[0], H.shape[1], H.shape[3], H.shape[4]
         intercell_intf = np.zeros((N, K))
         intracell_intf = np.zeros((interval, N, K))
-        sig = np.zeros((interval, N, K))
+        sig = np.zeros((interval, N, K), dtype=self.dtype)
 
         for n in range(interval):
             for l in range(N):
@@ -119,7 +117,7 @@ class MassiveMIMOEnv(gym.Env):
 
         return rate
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed=None, options=None) -> tuple[np.ndarray, dict]:
         """
         Resets the environment to an initial internal state, returning an initial observation and info.
 
@@ -150,9 +148,9 @@ class MassiveMIMOEnv(gym.Env):
 
         info = {}
 
-        return np.array(self.state), info
+        return np.array(self.state, dtype=self.dtype), info
 
-    def step(self, action: int):
+    def step(self, action: int) -> tuple[np.ndarray, float, bool, bool, dict]:
         """
         Run one timestep of the environment's dynamics using the agent actions.
 
@@ -200,16 +198,9 @@ class MassiveMIMOEnv(gym.Env):
         info = {"downlink_rate": downlink_rate}
 
         return (
-            np.array(self.state),
+            np.array(self.state, dtype=self.dtype),
             reward,
             terminated,
             truncated,
             info,
         )
-
-    def render(self):
-        """
-        Render the environment to the console/screen.
-        Not implemented for this environment.
-        """
-        pass

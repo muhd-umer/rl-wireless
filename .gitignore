@@ -133,6 +133,6 @@ dmypy.json
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
+demo.ipynb
 
 .vscode/

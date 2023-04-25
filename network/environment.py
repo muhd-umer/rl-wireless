@@ -18,14 +18,14 @@ class MassiveMIMOEnv(gym.Env):
         self.N = N  # number of cells is equals to number of BSs
         self.M = M  # number of BS transmission antnneas
         self.K = K  # number of UEs in a cell
-        self.Ns = Ns  # Number of sample
-        self.min_P = min_P  # Minimum transmission power [dBm]
-        self.max_P = max_P  # Maximum transmission power [dBm]
-        self.num_P = num_P  # Number of action space
-        self.num_episodes = num_episodes  # Number of episodes
+        self.Ns = Ns  # number of sample
+        self.min_P = min_P  # minimum transmission power [dBm]
+        self.max_P = max_P  # maximum transmission power [dBm]
+        self.num_P = num_P  # mumber of action space
+        self.num_episodes = num_episodes  # number of episodes
 
         # Initialize the action space and observation space
-        self.action_value = self.get_power()  # Power set
+        self.action_value = self.get_power()  # power set
         self.action_num = len(self.action_value)
         self.action_space = spaces.Discrete(self.action_num)
         self.action_length = self.action_num

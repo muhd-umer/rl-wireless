@@ -75,7 +75,6 @@ class MassiveMIMOEnv(gym.Env):
 
         Returns:
             rate: downlink user-rate [bits/s/Hz]
-            sinr: downlink user-SINR [dB]
         """
         H, V = channel, precoding
         W = network_utils.complex_normalize(V, -1)
@@ -164,10 +163,8 @@ class MassiveMIMOEnv(gym.Env):
         Returns:
             next_state: The state of the environment after one
             reward: The reward after one step.
-            done: Whether the episode has ended.
-            info: Contains downlink_rate
-            about the previous action.
-            downlink_rate: The downlink rate of the previous action.
+            terminated, truncated: Compute done as terminated | truncated.
+            info: Contains downlink_rate about the previous action.
         """
 
         assert self.state is not None, "Call reset before using step method."

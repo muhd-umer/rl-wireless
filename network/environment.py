@@ -192,7 +192,9 @@ class MassiveMIMOEnv(gym.Env):
         terminated = True if (self.action_length <= 0) else False
         done = terminated or truncated
 
-        info = {"downlink_rate": downlink_rate}
+        info = {
+            "downlink_rate": downlink_rate,
+        }
 
         return (
             np.array(self.state, dtype=self.dtype),

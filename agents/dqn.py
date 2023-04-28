@@ -106,6 +106,7 @@ class DQNAgent(object):
         )
 
         self.obs, _ = self.envs.reset()
+        self.actions = None
         self.writer = SummaryWriter(f"runs/dqn")
 
     def load_model(self, weight_path):
@@ -133,9 +134,6 @@ class DQNAgent(object):
 
         Args:
             global_step (int): The current global step.
-
-        Returns:
-            actions (np.array): The actions to take.
         """
         epsilon = linear_schedule(
             self.start_e,
@@ -146,7 +144,7 @@ class DQNAgent(object):
 
         # If the exploration probability is greater than a random number, take a random action.
         if random.random() < epsilon:
-            actions = np.array(
+            self.actions = np.array(
                 [
                     self.envs.single_action_space.sample()
                     for _ in range(self.envs.num_envs)
@@ -156,10 +154,7 @@ class DQNAgent(object):
         # Otherwise, take the action with the highest Q value.
         else:
             q_values = self.q_network(torch.Tensor(self.obs).to(self.device))
-            actions = torch.argmax(q_values, dim=1).cpu().numpy()
-
-        # Return the actions.
-        return actions
+            self.actions = torch.argmax(q_values, dim=1).cpu().numpy()
 
     def predict_power(self):
         """
@@ -185,22 +180,6 @@ class DQNAgent(object):
         Returns:
             None.
         """
-        actions = self.get_actions(global_step)
-        next_obs, b_reward, b_terminated, b_truncated, b_info = self.envs.step(actions)
-        # next_obs = next_obs.flatten()
-
-        b_done = [b_terminated[i] or b_truncated[i] for i in range(self.envs.num_envs)]
-
-        real_next_obs = next_obs.copy()
-        for idx, d in enumerate(b_done):
-            if d:
-                real_next_obs[idx], _ = self.envs.envs[idx].reset()
-        self.replay_buffer.add(
-            self.obs, real_next_obs, actions, b_reward, b_done, b_info
-        )
-
-        self.obs = next_obs
-
         if global_step > self.learning_starts:
             if global_step % self.train_freq == 0:
                 data = self.replay_buffer.sample(self.batch_size)

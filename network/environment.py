@@ -8,9 +8,7 @@ from . import network_utils
 
 
 class MassiveMIMOEnv(gym.Env):
-    def __init__(
-        self, N, M, K, Ns, min_P, max_P, num_P, num_episodes, dtype=np.float32
-    ):
+    def __init__(self, N, M, K, Ns, min_P, max_P, num_P, dtype=np.float32):
         """
         Initialize the environment
         """
@@ -22,7 +20,6 @@ class MassiveMIMOEnv(gym.Env):
         self.min_P = min_P  # minimum transmission power [dBm]
         self.max_P = max_P  # maximum transmission power [dBm]
         self.num_P = num_P  # mumber of action space
-        self.num_episodes = num_episodes  # number of episodes
 
         # Initialize the action space and observation space
         self.action_value = self.get_power()  # power set
@@ -163,7 +160,8 @@ class MassiveMIMOEnv(gym.Env):
         Returns:
             next_state: The state of the environment after one
             reward: The reward after one step.
-            terminated, truncated: Compute done as terminated | truncated.
+            terminated: Whether the episode has ended.
+            truncated: Not implemented.
             info: Contains downlink_rate about the previous action.
         """
 
@@ -188,9 +186,8 @@ class MassiveMIMOEnv(gym.Env):
         self.action_length -= 1
         self.count += 1
 
-        truncated = self.count >= self.num_episodes
         terminated = True if (self.action_length <= 0) else False
-        done = terminated or truncated
+        truncated = True if self.action_length <= 0 else False
 
         info = {
             "downlink_rate": downlink_rate,

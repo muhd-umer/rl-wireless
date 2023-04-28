@@ -3,9 +3,9 @@ jax
 numba==0.56.4
 numpy==1.23.5
 scipy==1.9.1
-torch==2.0.0+cu118
+torch==2.0.0
 torch-tb-profiler==0.4.1
-torchaudio==2.0.1+cu118
-torchvision==0.15.1+cu118
+torchaudio==2.0.1
+torchvision==0.15.1
 tensorboard
 git+https://github.com/DLR-RM/stable-baselines3.git@40e0b9d

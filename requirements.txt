@@ -1,5 +1,5 @@
-gymnasium==0.28.1
-jax==0.4.8
+gymnasium
+jax
 numba==0.56.4
 numpy==1.23.5
 scipy==1.9.1

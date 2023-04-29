@@ -49,6 +49,7 @@ class DQNAgent(object):
         end_e (float): The final exploration probability.
         exploration_fraction (float): The fraction of steps to explore.
         learning_starts (int): The number of steps to take before starting to train.
+        total_timesteps (int): The total number of steps to train for.
         train_freq (int): The frequency (in steps) with which to train the DQN.
         batch_size (int): The batch size for training the DQN.
         device (str): The device to train the DQN on.
@@ -59,18 +60,19 @@ class DQNAgent(object):
     def __init__(
         self,
         envs: gym.Env,
-        gamma=0.99,
+        gamma=0.1,
         tau=1.0,
         target_freq=500,
-        start_e=1,
-        end_e=0.05,
+        start_e=0.2,
+        end_e=0.0001,
         exploration_fraction=0.5,
-        learning_starts=10000,
+        learning_starts=1000,
+        total_timesteps=500000,
         train_freq=10,
         batch_size=128,
         device="cuda",
         learning_rate=2.5e-4,
-        buffer_size=100000,
+        buffer_size=50000,
     ):
         self.envs = envs
         self.device = device
@@ -85,6 +87,7 @@ class DQNAgent(object):
         self.learning_starts = learning_starts
         self.train_freq = train_freq
         self.batch_size = batch_size
+        self.total_timesteps = total_timesteps
 
         # Initialize the Q network.
         self.q_network = QNetwork(envs).to(self.device)
@@ -138,7 +141,7 @@ class DQNAgent(object):
         epsilon = linear_schedule(
             self.start_e,
             self.end_e,
-            self.exploration_fraction * self.envs.envs[0].Ns,
+            self.exploration_fraction * self.total_timesteps,
             global_step,
         )
 
@@ -198,9 +201,18 @@ class DQNAgent(object):
                 if global_step % 100 == 0:
                     self.writer.add_scalar("losses/td_loss", loss, global_step)
                     self.writer.add_scalar(
-                        "losses/q_values", old_val.mean().item(), global_step
+                        "charts/epsilon",
+                        linear_schedule(
+                            self.start_e,
+                            self.end_e,
+                            self.exploration_fraction * self.total_timesteps,
+                            global_step,
+                        ),
+                        global_step,
                     )
-                    print("SPS:", int(global_step / (time.time() - start_time)))
+                    self.writer.add_scalar(
+                        "charts/reward", data.rewards.mean().item(), global_step
+                    )
                     self.writer.add_scalar(
                         "charts/SPS",
                         int(global_step / (time.time() - start_time)),

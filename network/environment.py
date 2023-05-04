@@ -8,7 +8,9 @@ from . import network_utils
 
 
 class MassiveMIMOEnv(gym.Env):
-    def __init__(self, N, M, K, Ns, min_P, max_P, num_P, dtype=np.float32):
+    def __init__(
+        self, N=7, M=32, K=10, Ns=10, min_P=-20, max_P=23, num_P=10, dtype=np.float32
+    ):
         """
         Initialize the environment
         """

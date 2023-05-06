@@ -1,8 +1,8 @@
-"ray[default]"
-"ray[air]" # installs Ray + dependencies for Ray AI Runtime
-"ray[tune]"  # installs Ray + dependencies for Ray Tune
-"ray[rllib]"  # installs Ray + dependencies for Ray RLlib
-"ray[serve]"  # installs Ray + dependencies for Ray Serve
+ray[default]
+ray[air]
+ray[tune]
+ray[rllib]
+ray[serve]
 gymnasium
 numba==0.56.4
 numpy==1.23.5

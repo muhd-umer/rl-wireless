@@ -41,7 +41,7 @@ def mldivide(A, B):
     return hermitian(np.linalg.solve(A, hermitian(B)))
 
 
-@jit
+@njit
 def corr(
     x: float,
     theta: ArrayLike,
@@ -63,15 +63,15 @@ def corr(
         res: correlation value
     """
 
-    @jit
+    @njit
     def corr_real(x, antenna_spacing, col):
         return np.cos(2 * np.pi * antenna_spacing * col * np.sin(x))
 
-    @jit
+    @njit
     def corr_imag(x, antenna_spacing, col):
         return np.sin(2 * np.pi * antenna_spacing * col * np.sin(x))
 
-    @jit
+    @njit
     def gaussian_pdf(x, mean, dev):
         return np.exp(-((x - mean) ** 2) / (2 * dev**2)) / (np.sqrt(2 * np.pi) * dev)
 

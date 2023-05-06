@@ -1,5 +1,9 @@
+-U "ray[default]"
+-U "ray[air]" # installs Ray + dependencies for Ray AI Runtime
+-U "ray[tune]"  # installs Ray + dependencies for Ray Tune
+-U "ray[rllib]"  # installs Ray + dependencies for Ray RLlib
+-U "ray[serve]"  # installs Ray + dependencies for Ray Serve
 gymnasium
-jax
 numba==0.56.4
 numpy==1.23.5
 scipy==1.9.1
@@ -8,4 +12,3 @@ torch-tb-profiler==0.4.1
 torchaudio==2.0.1
 torchvision==0.15.1
 tensorboard
-git+https://github.com/DLR-RM/stable-baselines3.git@40e0b9d

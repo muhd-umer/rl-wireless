@@ -1,0 +1,1 @@
+{"type": "Algorithm", "checkpoint_version": "1.1", "format": "cloudpickle", "state_file": "/home/zonularity/lcsproj/rl-wireless/results/R2D2/R2D2_MassiveMIMO-v0_1105c_00000_0_2023-05-07_19-04-22/checkpoint_000080/algorithm_state.pkl", "policy_ids": ["default_policy"], "ray_version": "2.4.0", "ray_commit": "4479f66d4db967d3c9dd0af2572061276ba926ba"}

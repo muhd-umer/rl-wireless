@@ -5,7 +5,7 @@ ray[rllib]
 ray[serve]
 gymnasium
 numba
-scipy==1.9.1
+scipy
 torch==2.0.0
 torch-tb-profiler==0.4.1
 torchaudio==2.0.1

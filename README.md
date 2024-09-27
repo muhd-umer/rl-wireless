@@ -24,7 +24,10 @@ It is recommended to create a new virtual environment to avoid conflicts with ot
 ```sh
 conda create -n rl-wireless python=3.9
 conda activate rl-wireless
+
 pip install -r requirements.txt
+# OR
+conda env create -f environment.yml
 ```
 
 **→ Using Mamba**
@@ -40,7 +43,10 @@ source "${HOME}/conda/etc/profile.d/mamba.sh"
 conda activate
 mamba create -n rl-wireless python=3.9
 mamba activate rl-wireless
+
 pip install -r requirements.txt
+# OR
+mamba env create -f environment.yml
 ```
 
 ## Environment

@@ -8,16 +8,40 @@ The application of deep reinforcement learning (DRL) for dynamic resource alloca
 
 To install the necessary dependencies and set up the project, follow these steps:
 
-1. Clone the repository:
-    ```sh
-    git clone https://github.com/muhd-umer/rl-wireless.git
-    cd rl-wireless
-    ```
+### Clone the repository
 
-2. Install the required packages:
-    ```sh
-    pip install -r requirements.txt
-    ```
+```
+git clone https://github.com/muhd-umer/rl-wireless.git
+cd rl-wireless
+```
+
+### Create a new virtual environment
+
+It is recommended to create a new virtual environment to avoid conflicts with other projects. You can create a new virtual environment using `conda` or `mamba`:
+
+**→ Using Conda**
+
+```
+conda create -n rl-wireless python=3.9
+conda activate rl-wireless
+pip install -r requirements.txt
+```
+
+**→ Using Mamba**
+
+```
+wget -O miniforge.sh \
+     "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh"
+bash miniforge.sh -b -p "${HOME}/conda"
+
+source "${HOME}/conda/etc/profile.d/conda.sh"
+source "${HOME}/conda/etc/profile.d/mamba.sh"
+
+conda activate
+mamba create -n rl-wireless python=3.9
+mamba activate rl-wireless
+pip install -r requirements.txt
+```
 
 ## Environment
 
@@ -27,12 +51,11 @@ The environment for this project is based on the `Gymnasium` library, a standard
 
 To register and create the environment, you can use the following code snippet:
 
-```python
+```
 import gymnasium as gym
 from network import MassiveMIMOEnv
 import numpy as np
 
-# Set the parameters
 # Set the parameters
 N = 7          # Number of cells (or base stations)
 M = 32         # Number of antennas per base station
@@ -63,7 +86,7 @@ env = gym.make(
 
 To run the code and train an agent, you can use the provided notebook `run.ipynb`, which contains step-by-step instructions and examples. Below is an example of how to set up and run the environment:
 
-```python
+```
 import numpy as np
 import gymnasium as gym
 from network import MassiveMIMOEnv
@@ -85,11 +108,11 @@ for _ in range(100):
 ## Training
 
 The `run.ipynb` notebook demonstrates how to train various DRL agents using the Ray RLlib library.<br>
-IT trains PPO, DQN, and R2D2 agents and evaluates their performance.
+It trains PPO, DQN, and R2D2 agents and evaluates their performance.
 
 ### Example: Training a PPO Agent
 
-```python
+```
 import ray
 from ray import air, tune
 from ray.tune.registry import get_trainable_cls

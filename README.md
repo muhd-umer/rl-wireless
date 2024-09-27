@@ -26,7 +26,8 @@ conda create -n rl-wireless python=3.9
 conda activate rl-wireless
 
 pip install -r requirements.txt
-# OR
+
+# Or just run
 conda env create -f environment.yml
 ```
 
@@ -45,7 +46,8 @@ mamba create -n rl-wireless python=3.9
 mamba activate rl-wireless
 
 pip install -r requirements.txt
-# OR
+
+# Or just run
 mamba env create -f environment.yml
 ```
 

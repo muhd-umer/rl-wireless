@@ -1,4 +1,4 @@
-ray[default,air,tune,rllib,serve]==2.20.0
+ray[default,air,tune,rllib,serve]==2.4.0
 gymnasium==0.28.1
 numba==0.51.2
 scipy==1.10.1

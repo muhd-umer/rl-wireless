@@ -1,4 +1,4 @@
-numpy
+numpy==1.23.1
 numba
 scipy
 ray[default,air,tune,rllib,serve]==2.4.0
@@ -8,3 +8,4 @@ torch-tb-profiler==0.4.1
 torchaudio==2.0.1
 torchvision==0.15.1
 tensorboard
+tensorflow_probability==0.24.0

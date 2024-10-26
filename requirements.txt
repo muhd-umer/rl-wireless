@@ -9,3 +9,4 @@ torchaudio==2.0.1
 torchvision==0.15.1
 tensorboard
 tensorflow_probability==0.24.0
+pydantic==1.10.18

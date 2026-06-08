@@ -146,3 +146,7 @@ results = tune.Tuner(
 ## Contributing
 
 Contributions are always welcome and highly appreciated. 💖
+
+## Maintainers
+
+This repo was maintained by Muhammad Umer and Muhammad Ahmed Mohsin.
